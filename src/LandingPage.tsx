@@ -31,9 +31,17 @@ const steps = [
   { step: 3, title: 'Get Results', desc: 'See rich, interactive responses instantly.' },
 ];
 
+const floatingIcons = [
+  { icon: '💡', className: 'left-10 top-16 text-blue-400', delay: 0 },
+  { icon: '⚡', className: 'right-16 top-32 text-green-400', delay: 0.2 },
+  { icon: '🌐', className: 'left-1/4 bottom-10 text-blue-300', delay: 0.4 },
+  { icon: '🤖', className: 'right-1/4 bottom-20 text-green-300', delay: 0.6 },
+];
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
+  const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     if (heroRef.current) {
@@ -43,49 +51,65 @@ export default function LandingPage() {
         { y: 0, opacity: 1, duration: 1, ease: 'power3.out' }
       );
     }
+    // Animate floating icons
+    iconRefs.current.forEach((el, i) => {
+      if (el) {
+        gsap.to(el, {
+          y: 24,
+          repeat: -1,
+          yoyo: true,
+          duration: 2.5 + i * 0.2,
+          ease: 'sine.inOut',
+          delay: floatingIcons[i].delay,
+        });
+      }
+    });
   }, []);
 
   return (
-    <div className="font-sora bg-gradient-to-b from-[#f8fafc] via-[#f6f7fb] to-[#eaf6f3] min-h-screen w-full text-gray-900">
-      {/* Nav Bar */}
-      <nav className="w-full flex justify-between items-center px-8 py-5 bg-white/80 shadow-sm fixed top-0 left-0 z-20 backdrop-blur-md">
-        <div className="flex items-center gap-2 font-bold text-xl">
-          <span className="bg-gradient-to-r from-teal-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent">AI Chat</span>
+    <div className="font-sora bg-white min-h-screen w-full text-gray-900">
+      {/* Premium Nav Bar */}
+      <nav className="w-full flex justify-center fixed top-0 left-0 z-20 bg-transparent py-6">
+        <div className="w-full max-w-6xl flex items-center justify-between bg-white/90 rounded-2xl shadow-lg px-8 py-3 border border-gray-100 backdrop-blur-md">
+          {/* Robot Emoji Logo */}
+          <div className="flex items-center">
+            <span className="text-3xl md:text-4xl select-none">🤖</span>
+          </div>
+          {/* Nav Links as Pills */}
+          <div className="hidden md:flex gap-3 text-base font-medium">
+            <a href="#features" className="rounded-full px-4 py-1 transition bg-transparent hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-100 focus:text-blue-700">Features</a>
+            <a href="#how" className="rounded-full px-4 py-1 transition bg-transparent hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-100 focus:text-blue-700">How it works</a>
+            <a href="#pricing" className="rounded-full px-4 py-1 transition bg-transparent hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-100 focus:text-blue-700">Pricing</a>
+            <a href="#footer" className="rounded-full px-4 py-1 transition bg-transparent hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-100 focus:text-blue-700">Contact</a>
+          </div>
+          {/* CTA Button */}
+          <button
+            className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow hover:scale-105 hover:bg-blue-700 transition-all duration-150"
+            onClick={() => navigate('/chat')}
+          >
+            Launch App
+          </button>
         </div>
-        <div className="hidden md:flex gap-8 text-base font-medium">
-          <a href="#features" className="hover:text-teal-500 transition">Features</a>
-          <a href="#how" className="hover:text-teal-500 transition">How it works</a>
-          <a href="#pricing" className="hover:text-teal-500 transition">Pricing</a>
-          <a href="#footer" className="hover:text-teal-500 transition">Contact</a>
-        </div>
-        <button
-          className="bg-gradient-to-r from-teal-400 via-fuchsia-400 to-indigo-400 text-white px-5 py-2 rounded-xl font-bold shadow hover:scale-105 transition"
-          onClick={() => navigate('/chat')}
-        >
-          Launch App
-        </button>
       </nav>
 
-      {/* HERO SECTION - Sophisticated SaaS style */}
-      <section className="pt-36 pb-24 flex flex-col items-center text-center relative z-10 min-h-[70vh]">
-        {/* Blurred Glow */}
-        <div className="absolute left-1/2 top-0 -translate-x-1/2 -z-10">
-          <div className="w-[600px] h-[300px] rounded-full bg-gradient-to-r from-teal-200 via-fuchsia-200 to-indigo-200 opacity-60 blur-3xl" />
-        </div>
+      {/* HERO SECTION - Clean, premium SaaS style */}
+      <section className="pt-48 pb-32 flex flex-col items-center text-center relative z-10 min-h-[70vh] bg-white overflow-hidden">
+        {/* Subtle Blurred Glow */}
+        <div className="absolute left-1/2 top-44 -translate-x-1/2 -z-10 w-[420px] h-[180px] rounded-full bg-blue-200 opacity-30 blur-3xl" />
         <div ref={heroRef} className="w-full flex flex-col items-center">
-          <h1 className="text-5xl sm:text-6xl font-extrabold mb-6 bg-gradient-to-r from-teal-500 via-fuchsia-500 to-indigo-500 bg-clip-text text-transparent drop-shadow-xl tracking-tight">
+          <h1 className="text-6xl sm:text-7xl font-extrabold mb-8 bg-gradient-to-r from-blue-600 via-green-400 to-blue-400 bg-clip-text text-transparent drop-shadow-xl tracking-tight font-[Poppins,Inter,sans-serif]">
             <span className="block">Unleash</span>
             <span className="block">Your AI Superpowers</span>
           </h1>
-          <p className="text-xl sm:text-2xl text-gray-700 max-w-2xl mx-auto mb-10">
+          <p className="text-2xl text-gray-700 max-w-2xl mx-auto mb-12 font-sora">
             The next-gen chatbot platform with plugins for everything.<br />
             Type, command, and get instant results in style.
           </p>
           {/* Glassmorphic CTA Card */}
-          <div className="bg-white/60 backdrop-blur-lg rounded-2xl shadow-xl px-8 py-6 flex flex-col items-center border border-white/40 max-w-md mx-auto">
-            <span className="text-lg font-semibold text-gray-800 mb-2">Start chatting for free</span>
+          <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl px-10 py-8 flex flex-col items-center border border-white/60 max-w-md mx-auto">
+            <span className="text-lg font-semibold text-gray-800 mb-3">Start chatting for free</span>
             <button
-              className="mt-2 px-8 py-3 bg-gradient-to-r from-teal-400 via-fuchsia-400 to-indigo-400 text-white text-lg font-bold rounded-xl shadow-lg hover:scale-105 hover:shadow-2xl transition-all duration-200 flex items-center gap-2"
+              className="mt-2 px-10 py-4 bg-blue-600 text-white text-xl font-bold rounded-xl shadow-lg hover:scale-105 hover:shadow-2xl transition-all duration-200 flex items-center gap-2"
               onClick={() => navigate('/chat')}
             >
               Get Started
