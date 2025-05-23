@@ -12,7 +12,9 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
+    "@types/react-scroll-to-bottom": "^4.2.5",
     "@types/uuid": "^10.0.0",
     "axios": "^1.9.0",
     "react": "^19.1.0",

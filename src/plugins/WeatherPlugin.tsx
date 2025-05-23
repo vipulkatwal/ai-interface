@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Plugin } from '../types';
 import { Card, CardContent, Typography } from '@mui/material';
 
-// Note: In a real application, this should be in an environment variable
+// Note: Replace this with your OpenWeatherMap API key
 const API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY';
 const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
@@ -21,6 +21,11 @@ const WeatherPlugin: Plugin = {
 
   async execute(args: string[]): Promise<WeatherData> {
     const city = args[0];
+
+    if (API_KEY === 'YOUR_OPENWEATHERMAP_API_KEY') {
+      throw new Error('Please set up your OpenWeatherMap API key in the WeatherPlugin.tsx file');
+    }
+
     try {
       const response = await axios.get(BASE_URL, {
         params: {
