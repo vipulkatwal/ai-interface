@@ -61,7 +61,7 @@ export class WeatherPlugin extends BasePlugin {
           sunset: sys?.sunset
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
         return {
           success: false,
