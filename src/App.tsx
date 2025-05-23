@@ -1,5 +1,7 @@
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ChatInterface from './components/ChatInterface';
+import LandingPage from './LandingPage';
 
 const theme = createTheme({
   palette: {
@@ -17,7 +19,13 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ChatInterface />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/chat" element={<ChatInterface />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }
