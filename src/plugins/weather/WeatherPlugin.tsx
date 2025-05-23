@@ -1,9 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import { BasePlugin } from '../base/BasePlugin';
+import { BasePlugin } from '../base/BasePlugin.tsx';
 import { PluginResponse } from '../../types';
+import { WeatherCard } from './WeatherCard';
 
-const API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY'; // Replace with your API key
+interface WeatherData {
+  city: string;
+  temperature: number;
+  description: string;
+  humidity: number;
+  icon?: string;
+  windSpeed?: number;
+  sunrise?: number;
+  sunset?: number;
+}
+
+const API_KEY = 'ce3f2554a9e087b4c776d5d081a2a52c'; // Replace with your API key
 const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
 export class WeatherPlugin extends BasePlugin {
@@ -11,13 +23,22 @@ export class WeatherPlugin extends BasePlugin {
     super(
       'weather',
       'weather',
-      'Get current weather for a city (e.g., /weather London)'
+      'Get weather information (e.g., /weather London)'
     );
   }
 
-  async execute(args: string[]): Promise<PluginResponse> {
+  async execute(args: string[]): Promise<PluginResponse<WeatherData | null>> {
+    if (!args.length) {
+      return {
+        success: false,
+        data: null,
+        error: 'Please provide a city name'
+      };
+    }
+
     try {
-      const city = args.join(' ');
+      // Normalize city input for case-insensitive search
+      const city = args.join(' ').trim();
       const response = await axios.get(BASE_URL, {
         params: {
           q: city,
@@ -26,17 +47,21 @@ export class WeatherPlugin extends BasePlugin {
         }
       });
 
-      const { main, weather, name } = response.data;
+      const { main, weather, name, wind, sys } = response.data;
       return {
         success: true,
         data: {
           city: name,
           temperature: main.temp,
           description: weather[0].description,
-          humidity: main.humidity
+          humidity: main.humidity,
+          icon: weather[0].icon,
+          windSpeed: wind?.speed,
+          sunrise: sys?.sunrise,
+          sunset: sys?.sunset
         }
       };
-    } catch (_error) {
+    } catch {
       return {
         success: false,
         data: null,
@@ -45,15 +70,32 @@ export class WeatherPlugin extends BasePlugin {
     }
   }
 
-  protected renderSuccess(data: PluginResponse): React.ReactNode {
-    const { city, temperature, description, humidity } = data.data;
+  protected renderSuccess(data: PluginResponse<WeatherData | null>): React.ReactNode {
+    if (!data.data) return null;
+    const { city, temperature, description, humidity, icon, windSpeed, sunrise, sunset } = data.data;
     return (
-      <div className="p-4 bg-blue-50 rounded-lg">
-        <div className="text-xl font-semibold">{city}</div>
-        <div className="text-2xl font-bold mt-2">{temperature}°C</div>
-        <div className="text-gray-600 capitalize">{description}</div>
-        <div className="text-sm text-gray-500 mt-2">Humidity: {humidity}%</div>
-      </div>
+      <WeatherCard
+        city={city}
+        temperature={temperature}
+        description={description}
+        humidity={humidity}
+        icon={icon}
+        windSpeed={windSpeed}
+        sunrise={sunrise}
+        sunset={sunset}
+      />
     );
+  }
+
+  public render(data: PluginResponse<WeatherData | null>, loading = false): React.ReactNode {
+    if (loading) {
+      return <div className="p-6 text-center animate-pulse text-blue-400">Loading weather...</div>;
+    }
+    if (!data.success) {
+      return (
+        <div className="p-6 text-center text-red-500 bg-red-50 rounded-xl">{data.error || 'Something went wrong.'}</div>
+      );
+    }
+    return this.renderSuccess(data);
   }
 }

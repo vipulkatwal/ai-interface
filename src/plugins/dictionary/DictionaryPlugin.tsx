@@ -1,10 +1,8 @@
 import React from 'react';
 import axios from 'axios';
-import { BasePlugin } from '../base/BasePlugin';
+import { BasePlugin } from '../base/BasePlugin.tsx';
 import { PluginResponse } from '../../types';
 import { DictionaryCard } from './DictionaryCard';
-
-const BASE_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en';
 
 interface DictionaryDefinition {
   definition: string;
@@ -35,6 +33,20 @@ interface DictionaryResponse {
   sourceUrls: string[];
 }
 
+interface DictionaryData {
+  word: string;
+  phonetic: string;
+  phonetics: Array<{
+    text: string;
+    audio?: string;
+  }>;
+  meanings: DictionaryMeaning[];
+  source: {
+    name: string;
+    url: string;
+  };
+}
+
 export class DictionaryPlugin extends BasePlugin {
   constructor() {
     super(
@@ -44,7 +56,7 @@ export class DictionaryPlugin extends BasePlugin {
     );
   }
 
-  async execute(args: string[]): Promise<PluginResponse> {
+  async execute(args: string[]): Promise<PluginResponse<DictionaryData | null>> {
     if (!args.length) {
       return {
         success: false,
@@ -55,7 +67,7 @@ export class DictionaryPlugin extends BasePlugin {
 
     try {
       const word = args.join(' ');
-      const response = await axios.get<DictionaryResponse[]>(`${BASE_URL}/${word}`);
+      const response = await axios.get<DictionaryResponse[]>(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
       const data = response.data[0];
 
       return {
@@ -106,7 +118,8 @@ export class DictionaryPlugin extends BasePlugin {
     }
   }
 
-  protected renderSuccess(data: PluginResponse): React.ReactNode {
+  protected renderSuccess(data: PluginResponse<DictionaryData | null>): React.ReactNode {
+    if (!data.data) return null;
     return <DictionaryCard data={data.data} />;
   }
 }

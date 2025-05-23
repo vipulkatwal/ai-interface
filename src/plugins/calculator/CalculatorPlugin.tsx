@@ -1,18 +1,32 @@
 import React from 'react';
-import { evaluate } from 'mathjs';
-import { BasePlugin } from '../base/BasePlugin';
+import { BasePlugin } from '../base/BasePlugin.tsx';
 import { PluginResponse } from '../../types';
+import { evaluate } from 'mathjs';
+import { CalculatorCard } from './CalculatorCard';
+
+interface CalculatorData {
+  expression: string;
+  result: number | string;
+}
 
 export class CalculatorPlugin extends BasePlugin {
   constructor() {
     super(
       'calculator',
       'calc',
-      'Evaluate mathematical expressions (e.g., /calc 2 + 2)'
+      'Perform calculations (e.g., /calc 2 + 2)'
     );
   }
 
-  async execute(args: string[]): Promise<PluginResponse> {
+  async execute(args: string[]): Promise<PluginResponse<CalculatorData | null>> {
+    if (!args.length) {
+      return {
+        success: false,
+        data: null,
+        error: 'Please provide a calculation'
+      };
+    }
+
     try {
       const expression = args.join(' ');
       const result = evaluate(expression);
@@ -20,25 +34,21 @@ export class CalculatorPlugin extends BasePlugin {
         success: true,
         data: {
           expression,
-          result
+          result: result.toString()
         }
       };
-    } catch (_error) {
+    } catch {
       return {
         success: false,
         data: null,
-        error: 'Invalid mathematical expression'
+        error: 'Invalid calculation'
       };
     }
   }
 
-  protected renderSuccess(data: PluginResponse): React.ReactNode {
+  protected renderSuccess(data: PluginResponse<CalculatorData | null>): React.ReactNode {
+    if (!data.data) return null;
     const { expression, result } = data.data;
-    return (
-      <div className="p-4 bg-blue-50 rounded-lg">
-        <div className="text-sm text-gray-600">Expression: {expression}</div>
-        <div className="text-lg font-semibold mt-2">Result: {result}</div>
-      </div>
-    );
+    return <CalculatorCard expression={expression} result={result} />;
   }
 }
