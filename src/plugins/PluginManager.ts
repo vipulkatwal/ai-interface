@@ -2,6 +2,7 @@ import { Plugin, PluginResponse } from '../types';
 import { CalculatorPlugin } from './calculator/CalculatorPlugin';
 import { WeatherPlugin } from './weather/WeatherPlugin';
 import { DictionaryPlugin } from './dictionary/DictionaryPlugin';
+import { CurrencyPlugin } from './currency/CurrencyPlugin';
 
 export class PluginManager {
   private plugins: Map<string, Plugin> = new Map();
@@ -14,7 +15,8 @@ export class PluginManager {
     const defaultPlugins = [
       new CalculatorPlugin(),
       new WeatherPlugin(),
-      new DictionaryPlugin()
+      new DictionaryPlugin(),
+      new CurrencyPlugin()
     ];
 
     defaultPlugins.forEach(plugin => {
@@ -44,6 +46,62 @@ export class PluginManager {
   }
 
   parseMessage(message: string): { command: string; args: string[] } | null {
+    // Natural language weather queries
+    const weatherPatterns = [
+      /(?:weather|temperature|forecast)\s+(?:in|at|for)\s+([\w\s]+)/i,
+      /what(?:'s| is) the weather in ([\w\s]+)/i,
+      /how(?:'s| is) the weather in ([\w\s]+)/i,
+      /is it raining in ([\w\s]+)/i
+    ];
+    for (const pattern of weatherPatterns) {
+      const match = message.match(pattern);
+      if (match && match[1]) {
+        return { command: 'weather', args: [match[1].trim()] };
+      }
+    }
+
+    // Natural language calculator queries
+    const calcPatterns = [
+      /what(?:'s| is) ([^?]+)\?/i,
+      /calculate ([^?]+)/i,
+      /how much is ([^?]+)\?/i,
+      /evaluate ([^?]+)/i
+    ];
+    for (const pattern of calcPatterns) {
+      const match = message.match(pattern);
+      if (match && match[1]) {
+        return { command: 'calc', args: [match[1].trim()] };
+      }
+    }
+
+    // Natural language dictionary queries
+    const dictPatterns = [
+      /define ([\w-]+)/i,
+      /what does ([\w-]+) mean/i,
+      /meaning of ([\w-]+)/i,
+      /definition of ([\w-]+)/i
+    ];
+    for (const pattern of dictPatterns) {
+      const match = message.match(pattern);
+      if (match && match[1]) {
+        return { command: 'define', args: [match[1].trim()] };
+      }
+    }
+
+    // Natural language currency converter queries
+    const currencyPatterns = [
+      /convert (\d+(?:\.\d+)?) ([A-Za-z]{3}) to ([A-Za-z]{3})/i,
+      /how much is (\d+(?:\.\d+)?) ([A-Za-z]{3}) in ([A-Za-z]{3})/i
+    ];
+    for (const pattern of currencyPatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        // args: [amount, from, 'to', to]
+        return { command: 'currency', args: [match[1], match[2], 'to', match[3]] };
+      }
+    }
+
+    // Original slash command parsing
     const match = message.match(/^\/(\w+)(?:\s+(.+))?$/);
     if (!match) return null;
 

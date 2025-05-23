@@ -7,7 +7,7 @@ export interface Message {
   content: string;
   type: MessageType;
   pluginName?: string;
-  pluginData?: any;
+  pluginData?: React.ReactNode;
   timestamp: string;
 }
 
