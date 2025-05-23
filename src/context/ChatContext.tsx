@@ -53,23 +53,23 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       pluginData,
       timestamp: new Date().toISOString(),
     };
-    
+
     setMessages((prevMessages) => [...prevMessages, newMessage]);
   };
 
   const processUserMessage = async (content: string) => {
     // Add user message to chat
     addMessage(content, 'user');
-    
+
     // Check if message is a command or can be handled by a plugin
     setIsLoading(true);
-    
+
     try {
       const matchedPlugin = await findMatchingPlugin(content);
-      
+
       if (matchedPlugin) {
         const { plugin, result } = matchedPlugin;
-        
+
         // Add assistant message with plugin result
         addMessage(
           result.content,
@@ -99,7 +99,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearMessages = () => {
     setMessages([]);
     localStorage.removeItem('chatMessages');
-    
+
     // Add welcome message after clearing
     addMessage(
       "Hi! I'm your AI assistant. Try commands like '/weather New York', '/calc 5*10', or '/define happiness'. Or just ask me naturally!",

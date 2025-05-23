@@ -1,9 +1,9 @@
-export type Sender = 'user' | 'assistant';
+export type MessageSender = 'user' | 'assistant';
 export type MessageType = 'text' | 'plugin';
 
 export interface Message {
   id: string;
-  sender: Sender;
+  sender: MessageSender;
   content: string;
   type: MessageType;
   pluginName?: string;
@@ -11,17 +11,16 @@ export interface Message {
   timestamp: string;
 }
 
-export interface Plugin {
-  name: string;
-  description: string;
-  icon: string;
-  triggers: string[];
-  keywords: string[];
-  execute: (input: string) => Promise<PluginResult>;
-  renderResult: (data: any) => React.ReactNode;
+export interface PluginResponse {
+  success: boolean;
+  data: any;
+  error?: string;
 }
 
-export interface PluginResult {
-  content: string;
-  pluginData: any;
+export interface Plugin {
+  name: string;
+  command: string;
+  description: string;
+  execute: (args: string[]) => Promise<PluginResponse>;
+  render: (data: PluginResponse) => React.ReactNode;
 }
