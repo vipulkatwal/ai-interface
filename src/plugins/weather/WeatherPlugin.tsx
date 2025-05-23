@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import axios from 'axios';
 import { BasePlugin } from '../base/BasePlugin.tsx';
 import { PluginResponse } from '../../types';
@@ -61,7 +61,14 @@ export class WeatherPlugin extends BasePlugin {
           sunset: sys?.sunset
         }
       };
-    } catch {
+    } catch (error: any) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return {
+          success: false,
+          data: null,
+          error: `City not found. Please check the spelling or try a nearby larger city.`
+        };
+      }
       return {
         success: false,
         data: null,

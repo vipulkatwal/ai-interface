@@ -11,7 +11,7 @@ interface MatchedPlugin {
 
 export const usePlugins = () => {
   const [plugins, setPlugins] = useState<Plugin[]>([]);
-  
+
   useEffect(() => {
     // Register all available plugins
     setPlugins([weatherPlugin, calculatorPlugin, dictionaryPlugin]);
@@ -22,10 +22,10 @@ export const usePlugins = () => {
     const slashCommandMatch = message.match(/^\/(\w+)\s+(.+)$/);
     if (slashCommandMatch) {
       const [, command, input] = slashCommandMatch;
-      const matchedPlugin = plugins.find(plugin => 
+      const matchedPlugin = plugins.find(plugin =>
         plugin.triggers.includes(command.toLowerCase())
       );
-      
+
       if (matchedPlugin) {
         try {
           const result = await matchedPlugin.execute(input);
@@ -36,19 +36,19 @@ export const usePlugins = () => {
         }
       }
     }
-    
+
     // Try natural language parsing
     for (const plugin of plugins) {
       // Check if message contains any of the plugin's keywords
-      const hasKeyword = plugin.keywords.some(keyword => 
+      const hasKeyword = plugin.keywords.some(keyword =>
         message.toLowerCase().includes(keyword.toLowerCase())
       );
-      
+
       if (hasKeyword) {
         try {
           // Extract the relevant part of the message after the keyword
           let input = message;
-          
+
           // For natural language queries, try to extract the relevant part
           plugin.keywords.forEach(keyword => {
             const regex = new RegExp(`(?:${keyword})\\s+(.+)`, 'i');
@@ -57,7 +57,7 @@ export const usePlugins = () => {
               input = match[1];
             }
           });
-          
+
           const result = await plugin.execute(input);
           return { plugin, result };
         } catch (error) {
@@ -66,7 +66,7 @@ export const usePlugins = () => {
         }
       }
     }
-    
+
     return null;
   };
 
