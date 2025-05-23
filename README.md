@@ -1,89 +1,155 @@
-# AI Chat Interface with Plugin System
+# AI-Powered Chatbot Interface
 
-A modern chat interface that supports plugin-based commands and natural language processing. Built with React, TypeScript, and Material-UI.
+A React-based chatbot interface that supports plugin commands and natural language interactions. Built with TypeScript, Material-UI, and a plugin architecture for extensibility.
 
 ## Features
 
-- Modern, responsive chat UI
-- Plugin system for extensible functionality
-- Built-in plugins:
-  - Calculator (`/calc [expression]`)
-  - Weather (`/weather [city]`)
-  - Dictionary (`/define [word]`)
-- Message history persistence
-- Loading states and error handling
-- Rich message rendering for plugin responses
+- 💬 Modern chat interface with message history
+- 🔌 Plugin system for extensible functionality
+- 🌤️ Weather information lookup
+- 🔢 Calculator for mathematical expressions
+- 📚 Dictionary definitions
+- 💾 Persistent chat history using localStorage
+- 🎨 Material Design UI components
+- 📱 Responsive layout
 
-## Prerequisites
+## Getting Started
 
-- Node.js 16+ and npm
+### Prerequisites
 
-## Setup
+- Node.js 16.x or later
+- npm or yarn
+- OpenWeatherMap API key (for weather plugin)
 
-1. Clone the repository
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd ai-interface
+```
+
 2. Install dependencies:
-   ```bash
-   npm install
+```bash
+npm install
+```
+
+3. Set up environment variables:
+   - Create a `.env` file in the root directory
+   - Add your API keys:
+   ```env
+   # OpenWeatherMap API key (Required for weather plugin)
+   # Get your free API key at: https://openweathermap.org/api
+   VITE_OPENWEATHER_API_KEY=your_api_key_here
    ```
-3. Create a `.env` file in the root directory and add your OpenWeatherMap API key:
-   ```
-   VITE_WEATHER_API_KEY=your_api_key_here
-   ```
+
 4. Start the development server:
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`
+
+### Environment Variables
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `VITE_OPENWEATHER_API_KEY` | OpenWeatherMap API key for weather data | Yes | - |
+
+To get your API keys:
+1. OpenWeatherMap API:
+   - Sign up at [OpenWeatherMap](https://openweathermap.org/api)
+   - Navigate to "API Keys" section
+   - Create a new API key or use the default one
+   - Copy the key to your `.env` file
 
 ## Plugin Architecture
 
-The plugin system is designed to be extensible and easy to use. Each plugin implements the following interface:
+The chatbot uses a plugin-based architecture that allows for easy extension of functionality:
 
+### Plugin Interface
 ```typescript
 interface Plugin {
   name: string;
   description: string;
-  triggerPattern: RegExp;
-  execute: (args: string[]) => Promise<any>;
-  render: (data: any) => React.ReactNode;
+  command: string;
+  regex: RegExp;
+  execute: (input: string) => Promise<any>;
+  renderResponse: (data: any) => React.ReactNode;
 }
 ```
 
-### Creating a New Plugin
+### Available Plugins
+
+1. **Calculator Plugin**
+   - Command: `/calc <expression>`
+   - Example: `/calc 5 * (10 + 2)`
+   - Safely evaluates mathematical expressions
+
+2. **Weather Plugin**
+   - Command: `/weather <city>`
+   - Example: `/weather London`
+   - Shows current weather conditions
+   - Requires: `VITE_OPENWEATHER_API_KEY`
+
+3. **Dictionary Plugin**
+   - Command: `/define <word>`
+   - Example: `/define serendipity`
+   - Provides word definitions and examples
+
+### Adding New Plugins
+
+To create a new plugin:
 
 1. Create a new file in `src/plugins/`
 2. Implement the Plugin interface
-3. Register the plugin in `src/components/ChatInterface.tsx`
+3. Register the plugin in `src/components/Chat.tsx`
 
-Example plugin:
+Example plugin structure:
 ```typescript
-const MyPlugin: Plugin = {
-  name: 'myplugin',
-  description: 'My awesome plugin',
-  triggerPattern: /^\/myplugin\s+(.+)$/,
-  async execute(args: string[]) {
-    // Plugin logic here
-    return result;
+export const myPlugin: Plugin = {
+  name: 'plugin-name',
+  description: 'Plugin description',
+  command: '/command',
+  regex: /^\/command\s+(.+)$/i,
+
+  async execute(input: string) {
+    // Process the input and return result
   },
-  render(data: any) {
-    return <div>{/* Render plugin output */}</div>;
+
+  renderResponse(data) {
+    // Return React component to render the result
   }
 };
 ```
 
-## Available Commands
+## Project Structure
 
-- `/calc [expression]` - Evaluate mathematical expressions
-- `/weather [city]` - Get current weather for a city
-- `/define [word]` - Look up word definitions
+```
+src/
+├── components/        # React components
+│   ├── Chat.tsx      # Main chat interface
+│   └── MessageBubble.tsx
+├── plugins/          # Plugin implementations
+│   ├── CalculatorPlugin.tsx
+│   ├── WeatherPlugin.tsx
+│   └── DictionaryPlugin.tsx
+├── services/         # Core services
+│   └── PluginManager.ts
+├── types/           # TypeScript type definitions
+│   ├── chat.ts
+│   └── env.d.ts
+└── App.tsx         # Root component
+```
 
 ## Technologies Used
 
-- React
+- React 18
 - TypeScript
 - Material-UI
 - Vite
-- Axios for API requests
-- react-scroll-to-bottom for chat scrolling
+- Axios
+- react-scroll-to-bottom
 
 ## Contributing
 
@@ -91,8 +157,8 @@ const MyPlugin: Plugin = {
 2. Create a feature branch
 3. Commit your changes
 4. Push to the branch
-5. Create a Pull Request
+5. Open a Pull Request
 
 ## License
 
-MIT
+This project is licensed under the MIT License.

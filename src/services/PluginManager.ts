@@ -1,53 +1,38 @@
-import { v4 as uuidv4 } from 'uuid';
-import type { Message, Plugin, PluginManager } from '../types';
+import type { Plugin, PluginManager } from '../types/chat';
 
-class PluginManagerImpl implements PluginManager {
-  plugins: Plugin[] = [];
+class PluginManagerService implements PluginManager {
+  plugins: Map<string, Plugin>;
 
-  registerPlugin(plugin: Plugin): void {
-    this.plugins.push(plugin);
+  constructor() {
+    this.plugins = new Map();
   }
 
-  async parseMessage(message: string): Promise<Message> {
-    const timestamp = new Date().toISOString();
+  register(plugin: Plugin): void {
+    this.plugins.set(plugin.name, plugin);
+  }
 
-    // Check for plugin commands
-    for (const plugin of this.plugins) {
-      const match = message.match(plugin.triggerPattern);
+  unregister(name: string): void {
+    this.plugins.delete(name);
+  }
+
+  findMatchingPlugin(message: string): { plugin: Plugin; match: RegExpMatchArray } | null {
+    for (const plugin of this.plugins.values()) {
+      const match = message.match(plugin.regex);
       if (match) {
-        const args = match.slice(1); // Remove the full match
-        try {
-          const pluginData = await plugin.execute(args);
-          return {
-            id: uuidv4(),
-            sender: 'assistant',
-            content: message,
-            type: 'plugin',
-            pluginName: plugin.name,
-            pluginData,
-            timestamp
-          };
-        } catch (error) {
-          return {
-            id: uuidv4(),
-            sender: 'assistant',
-            content: `Error executing ${plugin.name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            type: 'text',
-            timestamp
-          };
-        }
+        return { plugin, match };
       }
     }
+    return null;
+  }
 
-    // If no plugin matches, return as regular text message
-    return {
-      id: uuidv4(),
-      sender: 'user',
-      content: message,
-      type: 'text',
-      timestamp
-    };
+  async executePlugin(plugin: Plugin, input: string): Promise<unknown> {
+    try {
+      return await plugin.execute(input);
+    } catch (error) {
+      console.error(`Error executing plugin ${plugin.name}:`, error);
+      throw error;
+    }
   }
 }
 
-export const pluginManager = new PluginManagerImpl();
+export const pluginManager = new PluginManagerService();

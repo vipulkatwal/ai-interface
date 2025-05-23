@@ -1,6 +1,4 @@
 import type { Plugin } from '../types/chat';
-import { Card, CardContent, Typography } from '@mui/material';
-import React from 'react';
 
 function safeEval(expression: string): number {
   // Remove any characters that aren't numbers, operators, or spaces
@@ -18,7 +16,7 @@ function safeEval(expression: string): number {
       throw new Error('Invalid result');
     }
     return result;
-  } catch {
+  } catch (error) {
     throw new Error('Invalid expression');
   }
 }
@@ -29,23 +27,15 @@ export const calculatorPlugin: Plugin = {
   command: '/calc',
   regex: /^\/calc\s+(.+)$/i,
 
-  async execute(input: string): Promise<{ result: number; expression: string }> {
+  async execute(input: string): Promise<{ result: number }> {
     const result = safeEval(input);
-    return { result, expression: input };
+    return { result };
   },
 
-  renderResponse(data: { result: number; expression: string }) {
-    return (
-      <Card variant="outlined" sx={{ maxWidth: 300, my: 1 }}>
-        <CardContent>
-          <Typography variant="body2" color="text.secondary">
-            Expression: {data.expression}
-          </Typography>
-          <Typography variant="h6">
-            Result: {data.result}
-          </Typography>
-        </CardContent>
-      </Card>
-    );
+  renderResponse(data: { result: number }) {
+    return {
+      type: 'calculator',
+      result: data.result.toString()
+    };
   }
 };

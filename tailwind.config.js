@@ -1,12 +1,12 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
 	content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
 	theme: {
-		extend: {
-			fontFamily: {
-				sora: ["Sora", "sans-serif"],
-			},
-		},
+		extend: {},
 	},
 	plugins: [],
+	// Disable Tailwind's base styles since we're using MUI
+	corePlugins: {
+		preflight: false,
+	},
 };

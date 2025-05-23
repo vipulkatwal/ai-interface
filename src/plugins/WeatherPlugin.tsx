@@ -1,79 +1,79 @@
+import type { Plugin } from '../types/chat';
+import { Card, CardContent, Typography, Box } from '@mui/material';
+import React from 'react';
 import axios from 'axios';
-import type { Plugin } from '../types';
-import { Card, CardContent, Typography } from '@mui/material';
-
-// Note: Replace this with your OpenWeatherMap API key
-const API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY';
-const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
 interface WeatherData {
-  city: string;
-  temperature: number;
-  description: string;
-  humidity: number;
-  windSpeed: number;
+  main: {
+    temp: number;
+    humidity: number;
+    feels_like: number;
+  };
+  weather: Array<{
+    main: string;
+    description: string;
+    icon: string;
+  }>;
+  name: string;
 }
 
-const WeatherPlugin: Plugin = {
+export const weatherPlugin: Plugin = {
   name: 'weather',
   description: 'Get current weather for a city',
-  triggerPattern: /^\/weather\s+(.+)$/,
+  command: '/weather',
+  regex: /^\/weather\s+(.+)$/i,
 
-  async execute(args: string[]): Promise<WeatherData> {
-    const city = args[0];
+  async execute(input: string): Promise<WeatherData> {
+    const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 
-    if (API_KEY === 'YOUR_OPENWEATHERMAP_API_KEY') {
-      throw new Error('Please set up your OpenWeatherMap API key in the WeatherPlugin.tsx file');
+    if (!API_KEY) {
+      throw new Error('Weather API key is not configured. Please add VITE_OPENWEATHER_API_KEY to your .env file.');
     }
 
-    try {
-      const response = await axios.get(BASE_URL, {
-        params: {
-          q: city,
-          appid: API_KEY,
-          units: 'metric'
-        }
-      });
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(input.trim())}&units=metric&appid=${API_KEY}`;
 
-      const data = response.data;
-      return {
-        city: data.name,
-        temperature: Math.round(data.main.temp),
-        description: data.weather[0].description,
-        humidity: data.main.humidity,
-        windSpeed: data.wind.speed
-      };
+    try {
+      const response = await axios.get<WeatherData>(url);
+      if (response.status !== 200) {
+        throw new Error('Could not fetch weather data');
+      }
+      return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
-        throw new Error(`City "${city}" not found`);
+        throw new Error(`Could not find weather data for "${input}". Please check the city name and try again.`);
       }
-      throw new Error('Failed to fetch weather data');
+      throw new Error('Could not fetch weather data. Please try again later.');
     }
   },
 
-  render(data: WeatherData) {
+  renderResponse(data: WeatherData) {
     return (
-      <Card variant="outlined" sx={{ maxWidth: 300, mt: 1 }}>
+      <Card variant="outlined" sx={{ maxWidth: 300, my: 1 }}>
         <CardContent>
-          <Typography variant="h6" component="div">
-            Weather in {data.city}
+          <Typography variant="h6" gutterBottom>
+            Weather in {data.name}
           </Typography>
-          <Typography variant="h4" sx={{ my: 1 }}>
-            {data.temperature}°C
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <img
+              src={`https://openweathermap.org/img/w/${data.weather[0].icon}.png`}
+              alt={data.weather[0].description}
+              style={{ marginRight: 8 }}
+            />
+            <Typography variant="h5">
+              {Math.round(data.main.temp)}°C
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            Feels like: {Math.round(data.main.feels_like)}°C
           </Typography>
-          <Typography color="text.secondary" sx={{ textTransform: 'capitalize' }}>
-            {data.description}
+          <Typography variant="body2" color="text.secondary">
+            {data.weather[0].description.charAt(0).toUpperCase() + data.weather[0].description.slice(1)}
           </Typography>
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            Humidity: {data.humidity}%
-          </Typography>
-          <Typography variant="body2">
-            Wind Speed: {data.windSpeed} m/s
+          <Typography variant="body2" color="text.secondary">
+            Humidity: {data.main.humidity}%
           </Typography>
         </CardContent>
       </Card>
     );
   }
 };
-
-export default WeatherPlugin;
