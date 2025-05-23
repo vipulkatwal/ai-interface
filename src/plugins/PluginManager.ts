@@ -2,7 +2,6 @@ import { Plugin, PluginResponse } from '../types';
 import { CalculatorPlugin } from './calculator/CalculatorPlugin';
 import { WeatherPlugin } from './weather/WeatherPlugin';
 import { DictionaryPlugin } from './dictionary/DictionaryPlugin';
-import { CurrencyPlugin } from './currency/CurrencyPlugin';
 
 export class PluginManager {
   private plugins: Map<string, Plugin> = new Map();
@@ -15,8 +14,7 @@ export class PluginManager {
     const defaultPlugins = [
       new CalculatorPlugin(),
       new WeatherPlugin(),
-      new DictionaryPlugin(),
-      new CurrencyPlugin()
+      new DictionaryPlugin()
     ];
 
     defaultPlugins.forEach(plugin => {
@@ -85,19 +83,6 @@ export class PluginManager {
       const match = message.match(pattern);
       if (match && match[1]) {
         return { command: 'define', args: [match[1].trim()] };
-      }
-    }
-
-    // Natural language currency converter queries
-    const currencyPatterns = [
-      /convert (\d+(?:\.\d+)?) ([A-Za-z]{3}) to ([A-Za-z]{3})/i,
-      /how much is (\d+(?:\.\d+)?) ([A-Za-z]{3}) in ([A-Za-z]{3})/i
-    ];
-    for (const pattern of currencyPatterns) {
-      const match = message.match(pattern);
-      if (match) {
-        // args: [amount, from, 'to', to]
-        return { command: 'currency', args: [match[1], match[2], 'to', match[3]] };
       }
     }
 

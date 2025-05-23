@@ -91,8 +91,8 @@ export const CommandInput: React.FC<CommandInputProps> = ({
             />
             <button
               type="submit"
-              className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-all ml-2"
-              style={{ width: 44, height: 44 }}
+              className="h-12 w-12 flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white rounded-full m-1 shadow transition-all"
+              style={{ minWidth: 44, minHeight: 44 }}
             >
               <Send size={22} />
             </button>

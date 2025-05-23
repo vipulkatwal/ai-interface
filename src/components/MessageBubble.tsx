@@ -14,9 +14,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const bubbleBase =
     'max-w-[80%] px-4 py-3 rounded-2xl shadow-md mb-2 flex flex-col gap-1 animate-chatfade';
   const userBubble =
-    'bg-gradient-to-br from-blue-500 to-blue-400 text-white self-end rounded-br-md';
+    'bg-gradient-to-br from-purple-500 to-purple-400 text-white self-end rounded-br-md shadow-lg shadow-purple-200';
   const botBubble =
-    'bg-white/80 backdrop-blur border border-blue-100 text-blue-900 self-start rounded-bl-md';
+    'bg-purple-100 text-purple-900 self-start rounded-bl-md';
   const pluginBubble =
     'bg-white/60 backdrop-blur-md border border-blue-100 shadow-xl p-0';
 
@@ -40,7 +40,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         )}
         <div
           className={`text-[11px] mt-1 ${
-            isUser ? 'text-blue-100 text-right' : 'text-blue-400 text-left'
+            isUser ? 'text-purple-200 text-right' : 'text-purple-400 text-left'
           }`}
         >
           {timestamp}

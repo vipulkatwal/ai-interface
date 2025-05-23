@@ -4,7 +4,7 @@ import { MessageBubble } from './MessageBubble';
 import { CommandInput } from './CommandInput';
 import useChatStore from '../store/chatStore';
 import { PluginManager } from '../plugins/PluginManager';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Home } from 'lucide-react';
 
 const pluginManager = new PluginManager();
 
@@ -21,7 +21,11 @@ const TypingIndicator = () => (
   </div>
 );
 
-export const ChatUI: React.FC = () => {
+interface ChatUIProps {
+  onBackToHome?: () => void;
+}
+
+export const ChatUI: React.FC<ChatUIProps> = ({ onBackToHome }) => {
   const { messages, addMessage, setLoading, clearMessages } = useChatStore();
   const [showTyping, setShowTyping] = useState(false);
 
@@ -104,13 +108,24 @@ export const ChatUI: React.FC = () => {
           <span className="text-3xl select-none" role="img" aria-label="robot">🤖</span>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 drop-shadow-sm">AI Assistant</h1>
         </div>
-        <button
-          onClick={handleClearChat}
-          className="flex items-center gap-2 text-gray-600 hover:text-red-600 text-base font-medium transition-colors px-4 py-2 rounded-lg border border-gray-200 hover:border-red-300 bg-white hover:bg-red-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200"
-        >
-          <Trash2 size={18} />
-          Clear Chat
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleClearChat}
+            className="flex items-center gap-2 text-gray-600 hover:text-red-600 text-base font-medium transition-colors px-4 py-2 rounded-lg border border-gray-200 hover:border-red-300 bg-white hover:bg-red-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200"
+          >
+            <Trash2 size={18} />
+            Clear Chat
+          </button>
+          {onBackToHome && (
+            <button
+              onClick={onBackToHome}
+              className="flex items-center gap-2 text-gray-600 hover:text-purple-600 text-base font-medium transition-colors px-4 py-2 rounded-lg border border-gray-200 hover:border-purple-300 bg-white hover:bg-purple-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
+            >
+              <Home size={18} />
+              Home
+            </button>
+          )}
+        </div>
         <div className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-blue-100/0 via-blue-200/60 to-blue-100/0 pointer-events-none" />
       </header>
       <div className="flex-1 overflow-hidden">
