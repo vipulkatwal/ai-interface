@@ -1,11 +1,9 @@
-import type { ReactNode } from 'react';
-
-export type MessageSender = 'user' | 'assistant';
+export type Sender = 'user' | 'assistant';
 export type MessageType = 'text' | 'plugin';
 
 export interface Message {
   id: string;
-  sender: MessageSender;
+  sender: Sender;
   content: string;
   type: MessageType;
   pluginName?: string;
@@ -16,13 +14,14 @@ export interface Message {
 export interface Plugin {
   name: string;
   description: string;
-  triggerPattern: RegExp;
-  execute: (args: string[]) => Promise<any>;
-  render: (data: any) => ReactNode;
+  icon: string;
+  triggers: string[];
+  keywords: string[];
+  execute: (input: string) => Promise<PluginResult>;
+  renderResult: (data: any) => React.ReactNode;
 }
 
-export interface PluginManager {
-  plugins: Plugin[];
-  registerPlugin: (plugin: Plugin) => void;
-  parseMessage: (message: string) => Promise<Message>;
+export interface PluginResult {
+  content: string;
+  pluginData: any;
 }

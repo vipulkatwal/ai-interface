@@ -1,79 +1,71 @@
-import type { Plugin } from '../types/chat';
-import { Card, CardContent, Typography, Box } from '@mui/material';
 import React from 'react';
-import axios from 'axios';
+import { Plugin, PluginResult } from '../types';
+import { CloudSun, Thermometer, Droplets, Wind } from 'lucide-react';
 
 interface WeatherData {
-  main: {
-    temp: number;
-    humidity: number;
-    feels_like: number;
-  };
-  weather: Array<{
-    main: string;
-    description: string;
-    icon: string;
-  }>;
-  name: string;
+  location: string;
+  temperature: number;
+  condition: string;
+  humidity: number;
+  windSpeed: number;
 }
 
 export const weatherPlugin: Plugin = {
-  name: 'weather',
-  description: 'Get current weather for a city',
-  command: '/weather',
-  regex: /^\/weather\s+(.+)$/i,
-
-  async execute(input: string): Promise<WeatherData> {
-    const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
-
-    if (!API_KEY) {
-      throw new Error('Weather API key is not configured. Please add VITE_OPENWEATHER_API_KEY to your .env file.');
-    }
-
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(input.trim())}&units=metric&appid=${API_KEY}`;
-
+  name: 'Weather',
+  description: 'Get current weather for a location',
+  icon: 'cloud-sun',
+  triggers: ['weather', 'forecast'],
+  keywords: ['weather', 'temperature', 'forecast', "what's the weather", "how's the weather"],
+  
+  execute: async (location: string): Promise<PluginResult> => {
     try {
-      const response = await axios.get<WeatherData>(url);
-      if (response.status !== 200) {
-        throw new Error('Could not fetch weather data');
-      }
-      return response.data;
+      // In a real app, you would call a weather API
+      // This is a mock implementation
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+      
+      // Mock weather data based on location
+      const mockWeatherData: WeatherData = {
+        location: location.trim(),
+        temperature: Math.floor(Math.random() * 30) + 5, // 5-35°C
+        condition: ['Sunny', 'Cloudy', 'Partly Cloudy', 'Rainy', 'Thunderstorm'][
+          Math.floor(Math.random() * 5)
+        ],
+        humidity: Math.floor(Math.random() * 50) + 30, // 30-80%
+        windSpeed: Math.floor(Math.random() * 20) + 1, // 1-20 km/h
+      };
+      
+      return {
+        content: `Weather in ${mockWeatherData.location}: ${mockWeatherData.temperature}°C, ${mockWeatherData.condition}`,
+        pluginData: mockWeatherData,
+      };
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        throw new Error(`Could not find weather data for "${input}". Please check the city name and try again.`);
-      }
-      throw new Error('Could not fetch weather data. Please try again later.');
+      console.error('Error fetching weather:', error);
+      throw new Error(`Couldn't get weather for ${location}. Please try again.`);
     }
   },
-
-  renderResponse(data: WeatherData) {
-    return (
-      <Card variant="outlined" sx={{ maxWidth: 300, my: 1 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Weather in {data.name}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <img
-              src={`https://openweathermap.org/img/w/${data.weather[0].icon}.png`}
-              alt={data.weather[0].description}
-              style={{ marginRight: 8 }}
-            />
-            <Typography variant="h5">
-              {Math.round(data.main.temp)}°C
-            </Typography>
-          </Box>
-          <Typography variant="body2" color="text.secondary">
-            Feels like: {Math.round(data.main.feels_like)}°C
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {data.weather[0].description.charAt(0).toUpperCase() + data.weather[0].description.slice(1)}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Humidity: {data.main.humidity}%
-          </Typography>
-        </CardContent>
-      </Card>
-    );
-  }
+  
+  renderResult: (data: WeatherData) => (
+    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg p-4 text-white shadow-md">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xl font-semibold">{data.location}</h3>
+        <CloudSun size={28} className="text-yellow-200" />
+      </div>
+      
+      <div className="flex items-center mb-3">
+        <div className="text-3xl font-bold mr-2">{data.temperature}°C</div>
+        <div className="text-sm opacity-90">{data.condition}</div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="flex items-center">
+          <Droplets size={16} className="mr-1" />
+          <span>Humidity: {data.humidity}%</span>
+        </div>
+        <div className="flex items-center">
+          <Wind size={16} className="mr-1" />
+          <span>Wind: {data.windSpeed} km/h</span>
+        </div>
+      </div>
+    </div>
+  ),
 };

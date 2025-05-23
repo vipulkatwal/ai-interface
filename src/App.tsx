@@ -1,24 +1,32 @@
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
-import Chat from './components/Chat';
-
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#2196f3',
-    },
-    background: {
-      default: '#f5f5f5',
-    },
-  },
-});
+import React, { useState, useEffect } from 'react';
+import { ChatProvider } from './context/ChatContext';
+import ChatUI from './components/ChatUI';
+import LandingPage from './components/LandingPage';
 
 function App() {
+  const [showChat, setShowChat] = useState(false);
+
+  // Check if user has visited before
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('hasVisited');
+    if (hasVisited) {
+      setShowChat(true);
+    }
+  }, []);
+
+  const handleGetStarted = () => {
+    localStorage.setItem('hasVisited', 'true');
+    setShowChat(true);
+  };
+
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Chat />
-    </ThemeProvider>
+    <ChatProvider>
+      {showChat ? (
+        <ChatUI />
+      ) : (
+        <LandingPage onGetStarted={handleGetStarted} />
+      )}
+    </ChatProvider>
   );
 }
 

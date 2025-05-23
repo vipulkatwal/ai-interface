@@ -1,80 +1,126 @@
-import type { Plugin } from '../types/chat';
-import { Card, CardContent, Typography, Divider, Box } from '@mui/material';
 import React from 'react';
-import axios from 'axios';
+import { Plugin, PluginResult } from '../types';
+import { BookOpen } from 'lucide-react';
 
-interface DictionaryMeaning {
-  partOfSpeech: string;
-  definitions: Array<{
-    definition: string;
-    example?: string;
-  }>;
-  synonyms: string[];
-  antonyms: string[];
-}
-
-interface DictionaryData {
+interface DictionaryResult {
   word: string;
   phonetic?: string;
-  meanings: DictionaryMeaning[];
+  meanings: {
+    partOfSpeech: string;
+    definitions: string[];
+  }[];
 }
 
 export const dictionaryPlugin: Plugin = {
-  name: 'dictionary',
+  name: 'Dictionary',
   description: 'Look up word definitions',
-  command: '/define',
-  regex: /^\/define\s+(.+)$/i,
-
-  async execute(input: string): Promise<DictionaryData> {
-    const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(input.trim())}`;
-
+  icon: 'book-open',
+  triggers: ['define', 'dictionary', 'meaning'],
+  keywords: ['what does', 'mean', 'definition of', 'define'],
+  
+  execute: async (word: string): Promise<PluginResult> => {
     try {
-      const response = await axios.get<DictionaryData[]>(url);
-      return response.data[0];
-    } catch {
-      throw new Error('Could not find the definition for this word. Please check the spelling and try again.');
+      const cleanWord = word.trim().toLowerCase().replace(/[^a-z]/g, '');
+      
+      if (!cleanWord) {
+        throw new Error('Invalid word');
+      }
+      
+      // In a real app, you would call a dictionary API
+      // This is a mock implementation
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay
+      
+      // Mock dictionary data
+      const mockDictionary: Record<string, DictionaryResult> = {
+        happy: {
+          word: 'happy',
+          phonetic: '/ˈhæpi/',
+          meanings: [
+            {
+              partOfSpeech: 'adjective',
+              definitions: [
+                'Feeling or showing pleasure or contentment.',
+                'Fortunate and convenient.',
+              ],
+            },
+          ],
+        },
+        code: {
+          word: 'code',
+          phonetic: '/kəʊd/',
+          meanings: [
+            {
+              partOfSpeech: 'noun',
+              definitions: [
+                'A system of words, letters, figures, or other symbols substituted for other words, letters, etc.',
+                'A system of signals, such as sounds, light flashes, or flags, used to send messages.',
+                'A series of instructions to be fed into a computer.',
+              ],
+            },
+            {
+              partOfSpeech: 'verb',
+              definitions: [
+                'Convert into a particular code in order to convey a secret meaning.',
+                'Write code for a computer program.',
+              ],
+            },
+          ],
+        },
+      };
+      
+      // Default mock result for any word not in our mock dictionary
+      const defaultResult: DictionaryResult = {
+        word: cleanWord,
+        phonetic: `/ˈ${cleanWord}/`,
+        meanings: [
+          {
+            partOfSpeech: 'noun',
+            definitions: ['A word with meaning and purpose.'],
+          },
+        ],
+      };
+      
+      const result = mockDictionary[cleanWord] || defaultResult;
+      
+      // Create a readable content string
+      const definitionsText = result.meanings
+        .map(m => `(${m.partOfSpeech}) ${m.definitions[0]}`)
+        .join('; ');
+      
+      return {
+        content: `${result.word}: ${definitionsText}`,
+        pluginData: result,
+      };
+    } catch (error) {
+      console.error('Dictionary error:', error);
+      throw new Error(`Couldn't find definition for "${word}". Please try another word.`);
     }
   },
-
-  renderResponse(data: DictionaryData) {
-    return (
-      <Card variant="outlined" sx={{ maxWidth: 400, my: 1 }}>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
-            {data.word}
-          </Typography>
-          {data.phonetic && (
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {data.phonetic}
-            </Typography>
-          )}
-          {data.meanings.map((meaning, index) => (
-            <React.Fragment key={index}>
-              {index > 0 && <Divider sx={{ my: 1 }} />}
-              <Typography variant="subtitle1" color="primary" sx={{ mt: 1 }}>
-                {meaning.partOfSpeech}
-              </Typography>
-              {meaning.definitions.map((def, defIndex) => (
-                <Box key={defIndex} sx={{ mt: 1 }}>
-                  <Typography variant="body2">
-                    {defIndex + 1}. {def.definition}
-                  </Typography>
-                  {def.example && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                      Example: "{def.example}"
-                    </Typography>
-                  )}
-                </Box>
+  
+  renderResult: (data: DictionaryResult) => (
+    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 shadow-md">
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h3 className="text-lg font-bold text-purple-800">{data.word}</h3>
+          {data.phonetic && <div className="text-sm text-purple-600">{data.phonetic}</div>}
+        </div>
+        <BookOpen size={24} className="text-purple-500" />
+      </div>
+      
+      <div className="mt-2">
+        {data.meanings.map((meaning, index) => (
+          <div key={index} className="mb-2">
+            <div className="text-sm font-medium text-purple-700 italic">
+              {meaning.partOfSpeech}
+            </div>
+            <ol className="mt-1 list-decimal list-inside">
+              {meaning.definitions.map((def, i) => (
+                <li key={i} className="text-gray-700">{def}</li>
               ))}
-              {meaning.synonyms.length > 0 && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Synonyms: {meaning.synonyms.join(', ')}
-                </Typography>
-              )}
-            </React.Fragment>
-          ))}
-        </CardContent>
-      </Card>
-    );
-  }
+            </ol>
+          </div>
+        ))}
+      </div>
+    </div>
+  ),
 };

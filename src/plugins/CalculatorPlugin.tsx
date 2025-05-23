@@ -1,51 +1,66 @@
-import type { Plugin } from '../types/chat';
-import { Card, CardContent, Typography } from '@mui/material';
 import React from 'react';
+import { Plugin, PluginResult } from '../types';
+import { Calculator } from 'lucide-react';
 
-function safeEval(expression: string): number {
-  // Remove any characters that aren't numbers, operators, or spaces
-  const sanitizedExpr = expression.replace(/[^0-9+\-*/(). ]/g, '');
-
-  // Validate the expression
-  if (!/^[0-9+\-*/(). ]+$/.test(sanitizedExpr)) {
-    throw new Error('Invalid expression');
-  }
-
-  try {
-    // Use Function instead of eval for better security
-    const result = new Function(`return ${sanitizedExpr}`)();
-    if (typeof result !== 'number' || !isFinite(result)) {
-      throw new Error('Invalid result');
-    }
-    return result;
-  } catch {
-    throw new Error('Invalid expression');
-  }
+interface CalculationResult {
+  expression: string;
+  result: number;
 }
 
 export const calculatorPlugin: Plugin = {
-  name: 'calculator',
+  name: 'Calculator',
   description: 'Evaluate mathematical expressions',
-  command: '/calc',
-  regex: /^\/calc\s+(.+)$/i,
+  icon: 'calculator',
+  triggers: ['calc', 'calculate', 'math'],
+  keywords: ['calculate', 'compute', 'what is', 'solve', 'equals', 'equal to'],
+  
+  execute: async (expression: string): Promise<PluginResult> => {
+    try {
+      // Clean the expression of potentially unsafe code
+      const cleanExpression = expression
+        .replace(/[^0-9+\-*/().%\s]/g, '')
+        .trim();
+      
+      if (!cleanExpression) {
+        throw new Error('Invalid expression');
+      }
 
-  async execute(input: string): Promise<{ result: number; expression: string }> {
-    const result = safeEval(input);
-    return { result, expression: input };
+      // Safely evaluate the expression
+      // eslint-disable-next-line no-new-func
+      const result = Function(`"use strict"; return (${cleanExpression})`)();
+      
+      if (typeof result !== 'number' || isNaN(result)) {
+        throw new Error('Expression did not evaluate to a valid number');
+      }
+      
+      const formattedResult = Number.isInteger(result) 
+        ? result 
+        : parseFloat(result.toFixed(4));
+      
+      return {
+        content: `${cleanExpression} = ${formattedResult}`,
+        pluginData: {
+          expression: cleanExpression,
+          result: formattedResult,
+        },
+      };
+    } catch (error) {
+      console.error('Calculation error:', error);
+      throw new Error(`Couldn't calculate "${expression}". Please check your expression and try again.`);
+    }
   },
-
-  renderResponse(data: { result: number; expression: string }) {
-    return (
-      <Card variant="outlined" sx={{ maxWidth: 300, my: 1 }}>
-        <CardContent>
-          <Typography variant="body2" color="text.secondary">
-            Expression: {data.expression}
-          </Typography>
-          <Typography variant="h6">
-            Result: {data.result}
-          </Typography>
-        </CardContent>
-      </Card>
-    );
-  }
+  
+  renderResult: (data: CalculationResult) => (
+    <div className="bg-gray-800 rounded-lg p-4 text-white shadow-md">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-lg font-medium">Calculator</h3>
+        <Calculator size={20} className="text-gray-400" />
+      </div>
+      
+      <div className="flex flex-col">
+        <div className="text-gray-400 text-sm font-mono">{data.expression}</div>
+        <div className="text-2xl font-bold mt-1">{data.result}</div>
+      </div>
+    </div>
+  ),
 };
